@@ -1,0 +1,13 @@
+var _tet54$octagon$Audio$stopSound = _tet54$octagon$Native_Audio.stopSound;
+var _tet54$octagon$Audio$playSound = _tet54$octagon$Native_Audio.playSound;
+var _tet54$octagon$Audio$loadSound = _tet54$octagon$Native_Audio.loadSound;
+var _tet54$octagon$Audio$PlaybackOptions = F3(
+	function (a, b, c) {
+		return {volume: a, startAt: b, loop: c};
+	});
+var _tet54$octagon$Audio$defaultPlaybackOptions = A3(
+	_tet54$octagon$Audio$PlaybackOptions,
+	1.0,
+	_elm_lang$core$Maybe$Just(0.0),
+	false);
+var _tet54$octagon$Audio$Sound = {ctor: 'Sound'};

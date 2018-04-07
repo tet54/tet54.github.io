@@ -1,0 +1,8 @@
+node_modules/
+
+elm-stuff/
+repl-temp-*
+documentation.json
+
+tests/build/
+tests/src

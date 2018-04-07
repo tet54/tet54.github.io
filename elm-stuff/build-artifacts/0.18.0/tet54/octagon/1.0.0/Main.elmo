@@ -1,0 +1,912 @@
+var _tet54$octagon$Main$hasBass = function (time) {
+	return (_elm_lang$core$Native_Utils.cmp(time, 20894) < 0) ? false : ((_elm_lang$core$Native_Utils.cmp(time, 41976) < 0) ? true : ((_elm_lang$core$Native_Utils.cmp(time, 55672) < 0) ? false : ((_elm_lang$core$Native_Utils.cmp(time, 67842) < 0) ? true : ((_elm_lang$core$Native_Utils.cmp(time, 187846) < 0) ? false : ((_elm_lang$core$Native_Utils.cmp(time, 215938) < 0) ? true : false)))));
+};
+var _tet54$octagon$Main$bpm = function (beat) {
+	return ((2.0 * _elm_lang$core$Basics$pi) * beat) / 60;
+};
+var _tet54$octagon$Main$beatPhase = _elm_lang$core$Basics$degrees(270);
+var _tet54$octagon$Main$beatAmplitude = 6.0e-2;
+var _tet54$octagon$Main$beat = _tet54$octagon$Main$bpm(138.0);
+var _tet54$octagon$Main$pump = function (progress) {
+	return _tet54$octagon$Main$beatAmplitude * _elm_lang$core$Basics$sin(((_tet54$octagon$Main$beat * progress) / 1000) + _tet54$octagon$Main$beatPhase);
+};
+var _tet54$octagon$Main$beatPulse = function (game) {
+	return game.hasBass ? _evancz$elm_graphics$Collage$scale(
+		1 + _tet54$octagon$Main$pump(game.msRunning)) : _elm_lang$core$Basics$identity;
+};
+var _tet54$octagon$Main$trapezoid = F3(
+	function (base, height, color) {
+		var s = height / _elm_lang$core$Basics$tan(
+			_elm_lang$core$Basics$degrees(60));
+		return A2(
+			_evancz$elm_graphics$Collage$filled,
+			color,
+			_evancz$elm_graphics$Collage$polygon(
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: (0 - base) / 2, _1: 0},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: base / 2, _1: 0},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: (base / 2) - s, _1: height},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: ((0 - base) / 2) + s, _1: height},
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}));
+	});
+var _tet54$octagon$Main$makeCenterHole = F2(
+	function (colors, game) {
+		var line = _evancz$elm_graphics$Collage$solid(colors.bright);
+		var bassAdd = game.hasBass ? 0 : (100.0 * _tet54$octagon$Main$pump(game.msRunning));
+		var shape = A2(_evancz$elm_graphics$Collage$ngon, 6, 60 + bassAdd);
+		return {
+			ctor: '::',
+			_0: A2(
+				_evancz$elm_graphics$Collage$rotate,
+				_elm_lang$core$Basics$degrees(90),
+				A2(_evancz$elm_graphics$Collage$filled, colors.dark, shape)),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_evancz$elm_graphics$Collage$rotate,
+					_elm_lang$core$Basics$degrees(90),
+					A2(
+						_evancz$elm_graphics$Collage$outlined,
+						_elm_lang$core$Native_Utils.update(
+							line,
+							{width: 4.0}),
+						shape)),
+				_1: {ctor: '[]'}
+			}
+		};
+	});
+var _tet54$octagon$Main$makeColors = function (msRunning) {
+	var hue = 5.0e-5 * msRunning;
+	return {
+		dark: A3(_elm_lang$core$Color$hsl, hue, 0.6, 0.2),
+		medium: A3(_elm_lang$core$Color$hsl, hue, 0.6, 0.3),
+		bright: A4(_elm_lang$core$Color$hsla, hue, 0.6, 0.6, 0.8)
+	};
+};
+var _tet54$octagon$Main$moveRadial = F2(
+	function (angle, radius) {
+		return _evancz$elm_graphics$Collage$move(
+			{
+				ctor: '_Tuple2',
+				_0: radius * _elm_lang$core$Basics$cos(angle),
+				_1: radius * _elm_lang$core$Basics$sin(angle)
+			});
+	});
+var _tet54$octagon$Main$formatTime = function (running) {
+	var centiseconds = _elm_lang$core$Basics$floor(
+		_elm_lang$core$Time$inMilliseconds(running) / 10);
+	var seconds = (centiseconds / 100) | 0;
+	var centis = A2(_elm_lang$core$Basics_ops['%'], centiseconds, 100);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		A3(
+			_elm_lang$core$String$padLeft,
+			3,
+			_elm_lang$core$Native_Utils.chr('0'),
+			_elm_lang$core$Basics$toString(seconds)),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'.',
+			A3(
+				_elm_lang$core$String$padLeft,
+				2,
+				_elm_lang$core$Native_Utils.chr('0'),
+				_elm_lang$core$Basics$toString(centis))));
+};
+var _tet54$octagon$Main$makeTextBox = F2(
+	function (size, string) {
+		return _evancz$elm_graphics$Element$leftAligned(
+			A2(
+				_evancz$elm_graphics$Text$height,
+				size,
+				_evancz$elm_graphics$Text$monospace(
+					A2(
+						_evancz$elm_graphics$Text$color,
+						A3(_elm_lang$core$Color$rgb, 255, 255, 255),
+						_evancz$elm_graphics$Text$fromString(string)))));
+	});
+var _tet54$octagon$Main$startMessage = '@tet54: press SPACE to start/pause, use LEFT and RIGHT arrows keys to move';
+var _tet54$octagon$Main$updateAutoRotateSpeed = function (_p0) {
+	var _p1 = _p0;
+	return A2(
+		_elm_lang$core$Debug$log,
+		'autoRotateSpeed',
+		2.0e-2 * _elm_lang$core$Basics$sin(
+			A2(_elm_lang$core$Debug$log, 'φ', _p1.msRunning * 3.0e-4)));
+};
+var _tet54$octagon$Main$updateAutoRotateAngle = function (_p2) {
+	var _p3 = _p2;
+	return _p3.autoRotateAngle + _p3.autoRotateSpeed;
+};
+var _tet54$octagon$Main$updateMsRunning = F2(
+	function (timestamp, game) {
+		var _p4 = game.state;
+		switch (_p4.ctor) {
+			case 'Play':
+				return (game.msRunning + timestamp) - game.timeTick;
+			case 'NewGame':
+				return 0.0;
+			default:
+				return game.msRunning;
+		}
+	});
+var _tet54$octagon$Main$enemies = {
+	ctor: '::',
+	_0: {
+		ctor: '::',
+		_0: false,
+		_1: {
+			ctor: '::',
+			_0: true,
+			_1: {
+				ctor: '::',
+				_0: false,
+				_1: {
+					ctor: '::',
+					_0: true,
+					_1: {
+						ctor: '::',
+						_0: false,
+						_1: {
+							ctor: '::',
+							_0: true,
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		}
+	},
+	_1: {
+		ctor: '::',
+		_0: {
+			ctor: '::',
+			_0: false,
+			_1: {
+				ctor: '::',
+				_0: true,
+				_1: {
+					ctor: '::',
+					_0: true,
+					_1: {
+						ctor: '::',
+						_0: true,
+						_1: {
+							ctor: '::',
+							_0: true,
+							_1: {
+								ctor: '::',
+								_0: true,
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '::',
+				_0: true,
+				_1: {
+					ctor: '::',
+					_0: false,
+					_1: {
+						ctor: '::',
+						_0: true,
+						_1: {
+							ctor: '::',
+							_0: true,
+							_1: {
+								ctor: '::',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: true,
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				}
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '::',
+					_0: true,
+					_1: {
+						ctor: '::',
+						_0: true,
+						_1: {
+							ctor: '::',
+							_0: true,
+							_1: {
+								ctor: '::',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: false,
+									_1: {
+										ctor: '::',
+										_0: true,
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '::',
+						_0: true,
+						_1: {
+							ctor: '::',
+							_0: true,
+							_1: {
+								ctor: '::',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: false,
+									_1: {
+										ctor: '::',
+										_0: true,
+										_1: {
+											ctor: '::',
+											_0: true,
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						}
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '::',
+							_0: false,
+							_1: {
+								ctor: '::',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: false,
+									_1: {
+										ctor: '::',
+										_0: true,
+										_1: {
+											ctor: '::',
+											_0: false,
+											_1: {
+												ctor: '::',
+												_0: true,
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '::',
+								_0: true,
+								_1: {
+									ctor: '::',
+									_0: false,
+									_1: {
+										ctor: '::',
+										_0: true,
+										_1: {
+											ctor: '::',
+											_0: false,
+											_1: {
+												ctor: '::',
+												_0: true,
+												_1: {
+													ctor: '::',
+													_0: false,
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '::',
+									_0: true,
+									_1: {
+										ctor: '::',
+										_0: true,
+										_1: {
+											ctor: '::',
+											_0: true,
+											_1: {
+												ctor: '::',
+												_0: true,
+												_1: {
+													ctor: '::',
+													_0: true,
+													_1: {
+														ctor: '::',
+														_0: false,
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										}
+									}
+								},
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+};
+var _tet54$octagon$Main$enemyAcceleration = 2.0e-6;
+var _tet54$octagon$Main$enemyInitialSpeed = 0.25;
+var _tet54$octagon$Main$updateEnemySpeed = function (game) {
+	return A2(_elm_lang$core$Debug$log, 'enemy speed', _tet54$octagon$Main$enemyInitialSpeed + (game.msRunning * _tet54$octagon$Main$enemyAcceleration));
+};
+var _tet54$octagon$Main$enemyDistance = 350;
+var _tet54$octagon$Main$updateEnemies = function (game) {
+	var numEnemies = _elm_lang$core$List$length(_tet54$octagon$Main$enemies);
+	var maxDistance = numEnemies * _tet54$octagon$Main$enemyDistance;
+	var enemyProgress = game.msRunning * game.enemySpeed;
+	var offsetForEnemy = function (index) {
+		return _elm_lang$core$Basics$round(
+			(_tet54$octagon$Main$enemyDistance * _elm_lang$core$Basics$toFloat(index)) - enemyProgress);
+	};
+	var radiusFor = function (index) {
+		return _elm_lang$core$Basics$toFloat(
+			A2(
+				_elm_lang$core$Basics_ops['%'],
+				offsetForEnemy(index),
+				maxDistance));
+	};
+	return A2(
+		_elm_lang$core$List$indexedMap,
+		F2(
+			function (index, parts) {
+				return {
+					parts: parts,
+					radius: radiusFor(index)
+				};
+			}),
+		_tet54$octagon$Main$enemies);
+};
+var _tet54$octagon$Main$enemyThickness = 30;
+var _tet54$octagon$Main$makeEnemy = F2(
+	function (color, enemy) {
+		var base = (2.0 * (enemy.radius + _tet54$octagon$Main$enemyThickness)) / _elm_lang$core$Basics$sqrt(3);
+		var makeEnemyPart = function (index) {
+			return A3(
+				_tet54$octagon$Main$moveRadial,
+				_elm_lang$core$Basics$degrees(
+					_elm_lang$core$Basics$toFloat(index * 60)),
+				enemy.radius + _tet54$octagon$Main$enemyThickness,
+				A2(
+					_evancz$elm_graphics$Collage$rotate,
+					_elm_lang$core$Basics$degrees(
+						_elm_lang$core$Basics$toFloat(90 + (index * 60))),
+					A3(_tet54$octagon$Main$trapezoid, base, _tet54$octagon$Main$enemyThickness, color)));
+		};
+		return _evancz$elm_graphics$Collage$group(
+			A2(
+				_elm_lang$core$List$map,
+				makeEnemyPart,
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Tuple$first,
+					A2(
+						_elm_lang$core$List$filter,
+						_elm_lang$core$Tuple$second,
+						A2(
+							_elm_lang$core$List$indexedMap,
+							F2(
+								function (v0, v1) {
+									return {ctor: '_Tuple2', _0: v0, _1: v1};
+								}),
+							enemy.parts)))));
+	});
+var _tet54$octagon$Main$makeEnemies = F2(
+	function (color, enemies) {
+		return A2(
+			_elm_lang$core$List$map,
+			_tet54$octagon$Main$makeEnemy(color),
+			enemies);
+	});
+var _tet54$octagon$Main$bgBlack = A3(_elm_lang$core$Color$rgb, 20, 20, 20);
+var _tet54$octagon$Main$playerSpeed = 0.12;
+var _tet54$octagon$Main$playerSize = 10.0;
+var _tet54$octagon$Main$_p5 = {ctor: '_Tuple2', _0: 1024, _1: 576};
+var _tet54$octagon$Main$gameWidth = _tet54$octagon$Main$_p5._0;
+var _tet54$octagon$Main$gameHeight = _tet54$octagon$Main$_p5._1;
+var _tet54$octagon$Main$_p6 = {ctor: '_Tuple2', _0: _tet54$octagon$Main$gameWidth / 2, _1: _tet54$octagon$Main$gameHeight / 2};
+var _tet54$octagon$Main$halfWidth = _tet54$octagon$Main$_p6._0;
+var _tet54$octagon$Main$halfHeight = _tet54$octagon$Main$_p6._1;
+var _tet54$octagon$Main$octagonElement = function (i) {
+	var angle1 = _elm_lang$core$Basics$degrees(
+		_elm_lang$core$Basics$toFloat(60 * (i + 1)));
+	var angle0 = _elm_lang$core$Basics$degrees(
+		_elm_lang$core$Basics$toFloat(60 * i));
+	var radius = _tet54$octagon$Main$halfWidth * _elm_lang$core$Basics$sqrt(2);
+	return {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 0.0, _1: 0.0},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$sin(angle0) * radius,
+				_1: _elm_lang$core$Basics$cos(angle0) * radius
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Basics$sin(angle1) * radius,
+					_1: _elm_lang$core$Basics$cos(angle1) * radius
+				},
+				_1: {ctor: '[]'}
+			}
+		}
+	};
+};
+var _tet54$octagon$Main$makeField = function (colors) {
+	var color = function (i) {
+		return _elm_lang$core$Native_Utils.eq(
+			A2(_elm_lang$core$Basics_ops['%'], i, 2),
+			0) ? colors.dark : colors.medium;
+	};
+	var poly = function (i) {
+		return A2(
+			_evancz$elm_graphics$Collage$filled,
+			color(i),
+			_evancz$elm_graphics$Collage$polygon(
+				_tet54$octagon$Main$octagonElement(i)));
+	};
+	return _evancz$elm_graphics$Collage$group(
+		A2(
+			_elm_lang$core$List$map,
+			poly,
+			A2(_elm_lang$core$List$range, 0, 7)));
+};
+var _tet54$octagon$Main$_p7 = {ctor: '_Tuple2', _0: (_tet54$octagon$Main$gameWidth / 2) | 0, _1: (_tet54$octagon$Main$gameHeight / 2) | 0};
+var _tet54$octagon$Main$iHalfWidth = _tet54$octagon$Main$_p7._0;
+var _tet54$octagon$Main$iHalfHeight = _tet54$octagon$Main$_p7._1;
+var _tet54$octagon$Main$playerRadius = _tet54$octagon$Main$gameWidth / 10.0;
+var _tet54$octagon$Main$colidesWith = F2(
+	function (player, enemy) {
+		var collidesAtIndex = function (index) {
+			var playerDegrees = (player.angle * 360) / (2 * _elm_lang$core$Basics$pi);
+			var toAngle = (_elm_lang$core$Basics$toFloat(index) + 1) * 60;
+			var fromAngle = _elm_lang$core$Basics$toFloat(index) * 60;
+			return (_elm_lang$core$Native_Utils.cmp(playerDegrees, fromAngle) > -1) && (_elm_lang$core$Native_Utils.cmp(playerDegrees, toAngle) < 0);
+		};
+		return ((_elm_lang$core$Native_Utils.cmp(enemy.radius, _tet54$octagon$Main$playerRadius) > 0) || (_elm_lang$core$Native_Utils.cmp(enemy.radius + _tet54$octagon$Main$enemyThickness, _tet54$octagon$Main$playerRadius - ((_tet54$octagon$Main$playerSize * 3) / 2)) < 0)) ? false : A2(
+			_elm_lang$core$List$any,
+			collidesAtIndex,
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Tuple$first,
+				A2(
+					_elm_lang$core$List$filter,
+					_elm_lang$core$Tuple$second,
+					A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							}),
+						enemy.parts))));
+	});
+var _tet54$octagon$Main$isGameOver = function (_p8) {
+	var _p9 = _p8;
+	return A2(
+		_elm_lang$core$List$any,
+		_tet54$octagon$Main$colidesWith(_p9.player),
+		_p9.enemies);
+};
+var _tet54$octagon$Main$makePlayer = function (player) {
+	var angle = player.angle - _elm_lang$core$Basics$degrees(30);
+	return A2(
+		_evancz$elm_graphics$Collage$rotate,
+		angle,
+		A3(
+			_tet54$octagon$Main$moveRadial,
+			angle,
+			_tet54$octagon$Main$playerRadius - _tet54$octagon$Main$playerSize,
+			A2(
+				_evancz$elm_graphics$Collage$filled,
+				A3(_elm_lang$core$Color$hsl, angle, 1, 0.5),
+				A2(_evancz$elm_graphics$Collage$ngon, 3, _tet54$octagon$Main$playerSize))));
+};
+var _tet54$octagon$Main$playbackOptions = _elm_lang$core$Native_Utils.update(
+	_tet54$octagon$Audio$defaultPlaybackOptions,
+	{loop: true, startAt: _elm_lang$core$Maybe$Nothing});
+var _tet54$octagon$Main$loadSound = _tet54$octagon$Audio$loadSound('music/shinytech.mp3');
+var _tet54$octagon$Main$Player = function (a) {
+	return {angle: a};
+};
+var _tet54$octagon$Main$Enemy = F2(
+	function (a, b) {
+		return {radius: a, parts: b};
+	});
+var _tet54$octagon$Main$Game = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return function (l) {
+												return function (m) {
+													return {player: a, direction: b, enemies: c, enemySpeed: d, pressedKeys: e, state: f, timeStart: g, timeTick: h, msRunning: i, autoRotateAngle: j, autoRotateSpeed: k, hasBass: l, music: m};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _tet54$octagon$Main$Colors = F3(
+	function (a, b, c) {
+		return {dark: a, medium: b, bright: c};
+	});
+var _tet54$octagon$Main$GameOver = {ctor: 'GameOver'};
+var _tet54$octagon$Main$Resume = {ctor: 'Resume'};
+var _tet54$octagon$Main$Pause = {ctor: 'Pause'};
+var _tet54$octagon$Main$Pausing = {ctor: 'Pausing'};
+var _tet54$octagon$Main$Play = {ctor: 'Play'};
+var _tet54$octagon$Main$view = function (game) {
+	var message = A2(
+		_tet54$octagon$Main$makeTextBox,
+		50,
+		function () {
+			var _p10 = game.state;
+			switch (_p10.ctor) {
+				case 'GameOver':
+					return 'Game Over';
+				case 'Pause':
+					return 'Pause';
+				default:
+					return '';
+			}
+		}());
+	var score = A2(
+		_tet54$octagon$Main$makeTextBox,
+		50,
+		_tet54$octagon$Main$formatTime(game.msRunning));
+	var colors = _tet54$octagon$Main$makeColors(game.msRunning);
+	var field = _evancz$elm_graphics$Collage$group(
+		A2(
+			_elm_lang$core$List$append,
+			{
+				ctor: '::',
+				_0: _tet54$octagon$Main$makeField(colors),
+				_1: {
+					ctor: '::',
+					_0: _tet54$octagon$Main$makePlayer(game.player),
+					_1: {
+						ctor: '::',
+						_0: _evancz$elm_graphics$Collage$group(
+							A2(_tet54$octagon$Main$makeEnemies, colors.bright, game.enemies)),
+						_1: {ctor: '[]'}
+					}
+				}
+			},
+			A2(_tet54$octagon$Main$makeCenterHole, colors, game)));
+	var bg = A2(
+		_evancz$elm_graphics$Collage$filled,
+		_tet54$octagon$Main$bgBlack,
+		A2(_evancz$elm_graphics$Collage$rect, _tet54$octagon$Main$gameWidth, _tet54$octagon$Main$gameHeight));
+	return _evancz$elm_graphics$Element$toHtml(
+		A4(
+			_evancz$elm_graphics$Element$container,
+			_tet54$octagon$Main$gameWidth,
+			_tet54$octagon$Main$gameHeight,
+			_evancz$elm_graphics$Element$middle,
+			A3(
+				_evancz$elm_graphics$Collage$collage,
+				_tet54$octagon$Main$gameWidth,
+				_tet54$octagon$Main$gameHeight,
+				{
+					ctor: '::',
+					_0: bg,
+					_1: {
+						ctor: '::',
+						_0: A2(_evancz$elm_graphics$Collage$rotate, game.autoRotateAngle, field),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_evancz$elm_graphics$Collage$move,
+								{ctor: '_Tuple2', _0: 0, _1: 40},
+								_evancz$elm_graphics$Collage$toForm(message)),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_evancz$elm_graphics$Collage$move,
+									{ctor: '_Tuple2', _0: 100 - _tet54$octagon$Main$halfWidth, _1: _tet54$octagon$Main$halfHeight - 40},
+									_evancz$elm_graphics$Collage$toForm(score)),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_evancz$elm_graphics$Collage$move,
+										{ctor: '_Tuple2', _0: 0, _1: 40 - _tet54$octagon$Main$halfHeight},
+										_evancz$elm_graphics$Collage$toForm(
+											_elm_lang$core$Native_Utils.eq(game.state, _tet54$octagon$Main$Play) ? A2(_evancz$elm_graphics$Element$spacer, 1, 1) : A2(_tet54$octagon$Main$makeTextBox, 20, _tet54$octagon$Main$startMessage))),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				})));
+};
+var _tet54$octagon$Main$Starting = {ctor: 'Starting'};
+var _tet54$octagon$Main$NewGame = {ctor: 'NewGame'};
+var _tet54$octagon$Main$Loading = {ctor: 'Loading'};
+var _tet54$octagon$Main$NotMoving = {ctor: 'NotMoving'};
+var _tet54$octagon$Main$Right = {ctor: 'Right'};
+var _tet54$octagon$Main$Left = {ctor: 'Left'};
+var _tet54$octagon$Main$onUserInput = F2(
+	function (keyMsg, game) {
+		var pressedKeys = A2(_ohanhi$keyboard_extra$Keyboard_Extra$update, keyMsg, game.pressedKeys);
+		var spacebar = A2(_elm_lang$core$List$member, _ohanhi$keyboard_extra$Keyboard_Extra$Space, pressedKeys) && (!A2(_elm_lang$core$List$member, _ohanhi$keyboard_extra$Keyboard_Extra$Space, game.pressedKeys));
+		var nextState = function () {
+			var _p11 = game.state;
+			switch (_p11.ctor) {
+				case 'NewGame':
+					return spacebar ? _tet54$octagon$Main$Play : _tet54$octagon$Main$NewGame;
+				case 'Play':
+					return spacebar ? _tet54$octagon$Main$Pause : _tet54$octagon$Main$Play;
+				case 'GameOver':
+					return spacebar ? _tet54$octagon$Main$NewGame : _tet54$octagon$Main$GameOver;
+				case 'Pause':
+					return spacebar ? _tet54$octagon$Main$Play : _tet54$octagon$Main$Pause;
+				default:
+					return game.state;
+			}
+		}();
+		var direction = (_elm_lang$core$Native_Utils.cmp(
+			_ohanhi$keyboard_extra$Keyboard_Extra$arrows(pressedKeys).x,
+			0) < 0) ? _tet54$octagon$Main$Left : ((_elm_lang$core$Native_Utils.cmp(
+			_ohanhi$keyboard_extra$Keyboard_Extra$arrows(pressedKeys).x,
+			0) > 0) ? _tet54$octagon$Main$Right : _tet54$octagon$Main$NotMoving);
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				game,
+				{pressedKeys: pressedKeys, direction: direction, state: nextState}),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	});
+var _tet54$octagon$Main$updatePlayerAngle = F2(
+	function (angle, dir) {
+		var sign = _elm_lang$core$Native_Utils.eq(dir, _tet54$octagon$Main$Left) ? 1 : (_elm_lang$core$Native_Utils.eq(dir, _tet54$octagon$Main$Right) ? -1 : 0);
+		var newAngle = angle + (_elm_lang$core$Basics$toFloat(sign) * _tet54$octagon$Main$playerSpeed);
+		return (_elm_lang$core$Native_Utils.cmp(newAngle, 0) < 0) ? (newAngle + (2 * _elm_lang$core$Basics$pi)) : ((_elm_lang$core$Native_Utils.cmp(newAngle, 2 * _elm_lang$core$Basics$pi) > 0) ? (newAngle - (2 * _elm_lang$core$Basics$pi)) : newAngle);
+	});
+var _tet54$octagon$Main$updatePlayer = F2(
+	function (dir, _p12) {
+		var _p13 = _p12;
+		var _p15 = _p13.state;
+		var _p14 = _p13.player;
+		if (_elm_lang$core$Native_Utils.eq(_p15, _tet54$octagon$Main$Play)) {
+			var newAngle = _elm_lang$core$Native_Utils.eq(_p15, _tet54$octagon$Main$NewGame) ? _elm_lang$core$Basics$degrees(30) : A2(_tet54$octagon$Main$updatePlayerAngle, _p14.angle, dir);
+			var newPlayer = _elm_lang$core$Native_Utils.update(
+				_p14,
+				{angle: newAngle});
+			return A2(
+				_elm_lang$core$List$any,
+				_tet54$octagon$Main$colidesWith(newPlayer),
+				_p13.enemies) ? _p14 : newPlayer;
+		} else {
+			return _p14;
+		}
+	});
+var _tet54$octagon$Main$Noop = {ctor: 'Noop'};
+var _tet54$octagon$Main$playSound = F2(
+	function (sound, options) {
+		return A2(
+			_elm_lang$core$Task$attempt,
+			_elm_lang$core$Basics$always(_tet54$octagon$Main$Noop),
+			A2(_tet54$octagon$Audio$playSound, options, sound));
+	});
+var _tet54$octagon$Main$stopSound = function (sound) {
+	return A2(
+		_elm_lang$core$Task$perform,
+		_elm_lang$core$Basics$always(_tet54$octagon$Main$Noop),
+		_tet54$octagon$Audio$stopSound(sound));
+};
+var _tet54$octagon$Main$onFrame = F2(
+	function (time, game) {
+		var _p16 = function () {
+			var _p17 = game.music;
+			if (_p17.ctor === 'Nothing') {
+				return {ctor: '_Tuple2', _0: _tet54$octagon$Main$Loading, _1: _elm_lang$core$Platform_Cmd$none};
+			} else {
+				var _p19 = _p17._0;
+				var _p18 = game.state;
+				switch (_p18.ctor) {
+					case 'Starting':
+						return {
+							ctor: '_Tuple2',
+							_0: _tet54$octagon$Main$Play,
+							_1: A2(
+								_tet54$octagon$Main$playSound,
+								_p19,
+								_elm_lang$core$Native_Utils.update(
+									_tet54$octagon$Main$playbackOptions,
+									{
+										startAt: _elm_lang$core$Maybe$Just(0)
+									}))
+						};
+					case 'Resume':
+						return {
+							ctor: '_Tuple2',
+							_0: _tet54$octagon$Main$Play,
+							_1: A2(_tet54$octagon$Main$playSound, _p19, _tet54$octagon$Main$playbackOptions)
+						};
+					case 'Pausing':
+						return {
+							ctor: '_Tuple2',
+							_0: _tet54$octagon$Main$Pause,
+							_1: _tet54$octagon$Main$stopSound(_p19)
+						};
+					case 'Play':
+						return _tet54$octagon$Main$isGameOver(game) ? {
+							ctor: '_Tuple2',
+							_0: _tet54$octagon$Main$GameOver,
+							_1: _tet54$octagon$Main$stopSound(_p19)
+						} : {ctor: '_Tuple2', _0: _tet54$octagon$Main$Play, _1: _elm_lang$core$Platform_Cmd$none};
+					default:
+						return {ctor: '_Tuple2', _0: game.state, _1: _elm_lang$core$Platform_Cmd$none};
+				}
+			}
+		}();
+		var nextState = _p16._0;
+		var nextCmd = _p16._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				game,
+				{
+					player: A2(_tet54$octagon$Main$updatePlayer, game.direction, game),
+					enemies: _tet54$octagon$Main$updateEnemies(game),
+					enemySpeed: _tet54$octagon$Main$updateEnemySpeed(game),
+					state: A2(_elm_lang$core$Debug$log, 'state', nextState),
+					timeStart: _elm_lang$core$Native_Utils.eq(game.state, _tet54$octagon$Main$NewGame) ? time : game.timeStart,
+					timeTick: time,
+					msRunning: A2(
+						_elm_lang$core$Debug$log,
+						'msRunning',
+						A2(_tet54$octagon$Main$updateMsRunning, time, game)),
+					autoRotateAngle: _tet54$octagon$Main$updateAutoRotateAngle(game),
+					autoRotateSpeed: _tet54$octagon$Main$updateAutoRotateSpeed(game),
+					hasBass: _tet54$octagon$Main$hasBass(game.msRunning)
+				}),
+			_1: nextCmd
+		};
+	});
+var _tet54$octagon$Main$update = F2(
+	function (msg, game) {
+		var _p20 = msg;
+		switch (_p20.ctor) {
+			case 'Step':
+				return A2(_tet54$octagon$Main$onFrame, _p20._0, game);
+			case 'KeyboardMsg':
+				return A2(_tet54$octagon$Main$onUserInput, _p20._0, game);
+			case 'MusicLoaded':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						game,
+						{
+							state: _tet54$octagon$Main$NewGame,
+							music: _elm_lang$core$Maybe$Just(_p20._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Error':
+				return _elm_lang$core$Native_Utils.crashCase(
+					'Main',
+					{
+						start: {line: 135, column: 2},
+						end: {line: 144, column: 24}
+					},
+					_p20)(_p20._0);
+			default:
+				return {ctor: '_Tuple2', _0: game, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _tet54$octagon$Main$Error = function (a) {
+	return {ctor: 'Error', _0: a};
+};
+var _tet54$octagon$Main$MusicLoaded = function (a) {
+	return {ctor: 'MusicLoaded', _0: a};
+};
+var _tet54$octagon$Main$soundLoaded = function (result) {
+	var _p22 = result;
+	if (_p22.ctor === 'Ok') {
+		return _tet54$octagon$Main$MusicLoaded(_p22._0);
+	} else {
+		return _tet54$octagon$Main$Error(_p22._0);
+	}
+};
+var _tet54$octagon$Main$init = {
+	ctor: '_Tuple2',
+	_0: {
+		player: _tet54$octagon$Main$Player(
+			_elm_lang$core$Basics$degrees(30)),
+		direction: _tet54$octagon$Main$NotMoving,
+		pressedKeys: {ctor: '[]'},
+		state: _tet54$octagon$Main$NewGame,
+		enemies: {ctor: '[]'},
+		enemySpeed: 0.0,
+		timeStart: 0.0,
+		timeTick: 0.0,
+		msRunning: 0.0,
+		autoRotateAngle: 0.0,
+		autoRotateSpeed: 0.0,
+		hasBass: false,
+		music: _elm_lang$core$Maybe$Nothing
+	},
+	_1: A2(_elm_lang$core$Task$attempt, _tet54$octagon$Main$soundLoaded, _tet54$octagon$Main$loadSound)
+};
+var _tet54$octagon$Main$KeyboardMsg = function (a) {
+	return {ctor: 'KeyboardMsg', _0: a};
+};
+var _tet54$octagon$Main$Step = function (a) {
+	return {ctor: 'Step', _0: a};
+};
+var _tet54$octagon$Main$subscriptions = function (game) {
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: _elm_lang$animation_frame$AnimationFrame$times(
+				function (time) {
+					return _tet54$octagon$Main$Step(time);
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Platform_Sub$map, _tet54$octagon$Main$KeyboardMsg, _ohanhi$keyboard_extra$Keyboard_Extra$subscriptions),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _tet54$octagon$Main$main = _elm_lang$html$Html$program(
+	{init: _tet54$octagon$Main$init, update: _tet54$octagon$Main$update, view: _tet54$octagon$Main$view, subscriptions: _tet54$octagon$Main$subscriptions})();
