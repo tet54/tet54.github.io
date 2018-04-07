@@ -151,27 +151,27 @@ onUserInput keyMsg game =
     Keyboard.Extra.update keyMsg game.pressedKeys
   spacebar =
     List.member Keyboard.Extra.Space pressedKeys
-    && not (List.member Keyboard.Extra.Space game.pressedKeys)
+     && not (List.member Keyboard.Extra.Space game.pressedKeys)
   direction =
     if (Keyboard.Extra.arrows pressedKeys).x < 0 then Left
     else if (Keyboard.Extra.arrows pressedKeys).x > 0 then Right
     else NotMoving
   nextState =
    case game.state of
-    NewGame -> if spacebar then Play else NewGame
-    Play -> if spacebar then Pause else Play
+    NewGame -> if spacebar then Starting else NewGame
+    Play -> if spacebar then Pausing else Play
     GameOver -> if spacebar then NewGame else GameOver
-    Pause -> if spacebar then Play else Pause
+    Pause -> if spacebar then Resume else Pause
     _ -> game.state
  in
- ( 
+  ( 
    { game
      | pressedKeys = pressedKeys
      , direction = direction
      , state = nextState
    }
- , Cmd.none
- )
+  , Cmd.none
+  )
 
 --updates game state on the next frame
 onFrame : Time -> Game -> (Game, Cmd Msg)
@@ -487,6 +487,7 @@ view game =
   --value of message box depends on state of game: Game Over or Pause or empty
   message = makeTextBox 50 <|
    case game.state of
+    Loading -> "Loading.."
     GameOver -> "Game Over"
     Pause -> "Pause"
     _ -> ""
@@ -503,7 +504,7 @@ view game =
    <| container gameWidth gameHeight middle 
    <| collage gameWidth gameHeight
       [ bg
-      , field |> rotate game.autoRotateAngle
+      , field |> rotate game.autoRotateAngle |> beatPulse game
       , toForm message |> move (0, 40)
       , toForm score |> move (100 - halfWidth, halfHeight - 40)
       , toForm ( --toForm method turns an Element into a Form object, so it can be modified later on

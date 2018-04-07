@@ -1,0 +1,35 @@
+<!doctype html>
+<head>
+  <title>tet54: Hexagon</title>
+    <style type="text/css">
+      html, body { margin: 0; }
+      #app {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        z-index: 10;
+      }
+      .disclaimer {
+        padding-left: 1em;
+        position: absolute;
+        bottom: 0;
+      }
+    </style>
+</head>
+<body>
+
+  <div id="app"></div>
+
+  <p class="disclaimer">
+    
+    <small>
+    
+    Built by @tet54 with Elm
+    </small></p>
+
+</body>
+<script src="Octagon.js"></script>
+<script type="text/javascript">
+  Elm.Main.embed(document.getElementById('app'))
+</script>

@@ -599,6 +599,8 @@ var _tet54$octagon$Main$view = function (game) {
 		function () {
 			var _p10 = game.state;
 			switch (_p10.ctor) {
+				case 'Loading':
+					return 'Loading..';
 				case 'GameOver':
 					return 'Game Over';
 				case 'Pause':
@@ -649,7 +651,10 @@ var _tet54$octagon$Main$view = function (game) {
 					_0: bg,
 					_1: {
 						ctor: '::',
-						_0: A2(_evancz$elm_graphics$Collage$rotate, game.autoRotateAngle, field),
+						_0: A2(
+							_tet54$octagon$Main$beatPulse,
+							game,
+							A2(_evancz$elm_graphics$Collage$rotate, game.autoRotateAngle, field)),
 						_1: {
 							ctor: '::',
 							_0: A2(
@@ -690,13 +695,13 @@ var _tet54$octagon$Main$onUserInput = F2(
 			var _p11 = game.state;
 			switch (_p11.ctor) {
 				case 'NewGame':
-					return spacebar ? _tet54$octagon$Main$Play : _tet54$octagon$Main$NewGame;
+					return spacebar ? _tet54$octagon$Main$Starting : _tet54$octagon$Main$NewGame;
 				case 'Play':
-					return spacebar ? _tet54$octagon$Main$Pause : _tet54$octagon$Main$Play;
+					return spacebar ? _tet54$octagon$Main$Pausing : _tet54$octagon$Main$Play;
 				case 'GameOver':
 					return spacebar ? _tet54$octagon$Main$NewGame : _tet54$octagon$Main$GameOver;
 				case 'Pause':
-					return spacebar ? _tet54$octagon$Main$Play : _tet54$octagon$Main$Pause;
+					return spacebar ? _tet54$octagon$Main$Resume : _tet54$octagon$Main$Pause;
 				default:
 					return game.state;
 			}
